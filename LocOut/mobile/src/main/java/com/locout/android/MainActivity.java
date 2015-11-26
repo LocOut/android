@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.locout.android.api.Device;
-import com.locout.android.api.User;
 import com.locout.android.ui.DeviceListAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,11 +18,21 @@ public class MainActivity extends AppCompatActivity {
     DeviceListAdapter deviceListAdapter;
     ListView deviceListView;
 
+    LocOut app;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        app = (LocOut) getApplication();
+        if (!app.isInitialized) {
+            app.initialize(this);
+        } else {
+            app.setContextActivity(this);
+        }
+
+        setupUi();
     }
 
     private void setupUi() {
@@ -39,18 +48,60 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        deviceListView = (ListView) findViewById(R.id.deviceListView);
-
-        User user = new User(1234l);
-
         Device sampleDevice = new Device(4567l);
         sampleDevice.setName("Test device");
         sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
 
-        user.getDevices().add(sampleDevice);
+        sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
 
-        deviceListAdapter = new DeviceListAdapter(this, R.id.deviceListView, user.getDevices());
+        sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
+
+        sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
+
+        sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
+
+        sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+        app.getUser().getDevices().add(sampleDevice);
+
+        deviceListAdapter = new DeviceListAdapter(this, R.id.deviceListView, app.getUser().getDevices());
         deviceListView.setAdapter(deviceListAdapter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        app.getGoogleApiClient().connect();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        app.getGoogleApiClient().disconnect();
+        super.onStop();
     }
 
     @Override
