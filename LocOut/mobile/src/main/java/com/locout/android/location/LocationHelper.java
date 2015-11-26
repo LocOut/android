@@ -1,16 +1,18 @@
 package com.locout.android.location;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-public class LocationHelper implements LocationListener {
+public class LocationHelper implements com.google.android.gms.location.LocationListener {
+
+    public static final String TAG = LocationHelper.class.getSimpleName();
 
     public static final int LOCATION_MAXIMUM_UPDATE_INTERVAL = 500;
     public static final int LOCATION_MINUMUM_UPDATE_INTERVAL = 1000;
@@ -38,14 +40,19 @@ public class LocationHelper implements LocationListener {
     public void onLocationChanged(Location location) {
         lastLocation = location;
         lastLocationUpdate = (new Date()).getTime();
+        for (LocationListener locationListener : locationListeners) {
+            locationListener.onLocationChanged(lastLocation);
+        }
     }
 
     public void startLocationUpdates(GoogleApiClient googleApiClient) {
+        Log.d(TAG, "Starting location updates");
         updatingLocation = true;
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, createLocationRequest(), this);
     }
 
     public void stopLocationUpdates(GoogleApiClient googleApiClient) {
+        Log.d(TAG, "Stopping location updates");
         updatingLocation = false;
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
     }
