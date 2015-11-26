@@ -5,20 +5,32 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListView;
+
+import com.locout.android.api.Device;
+import com.locout.android.api.User;
+import com.locout.android.ui.DeviceListAdapter;
 
 public class MainActivity extends AppCompatActivity {
+
+    DeviceListAdapter deviceListAdapter;
+    ListView deviceListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+    }
+
+    private void setupUi() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -26,6 +38,19 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        deviceListView = (ListView) findViewById(R.id.deviceListView);
+
+        User user = new User(1234l);
+
+        Device sampleDevice = new Device(4567l);
+        sampleDevice.setName("Test device");
+        sampleDevice.setTrustLevel(0.5f);
+
+        user.getDevices().add(sampleDevice);
+
+        deviceListAdapter = new DeviceListAdapter(this, R.id.deviceListView, user.getDevices());
+        deviceListView.setAdapter(deviceListAdapter);
     }
 
     @Override
