@@ -12,12 +12,16 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 import com.locout.android.api.RequestCallback;
 import com.locout.android.api.RequestHelper;
 import com.locout.android.api.User;
 import com.locout.android.location.LocationHelper;
 import com.locout.android.location.LocationListener;
+import com.locout.android.wear.WearHelper;
 
 public class LocOut extends Application implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener{
 
@@ -28,6 +32,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
 
     private GoogleApiClient googleApiClient;
     private User user;
+    private WearHelper wearHelper;
     private LocationHelper locationHelper;
 
     public void initialize(Activity contextActivity) {
@@ -37,8 +42,6 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
 
         try	{
             user = new User(1l);
-            locationHelper = new LocationHelper();
-            locationHelper.getLocationListeners().add(this);
 
             googleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(LocationServices.API)
@@ -46,6 +49,12 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
+
+            wearHelper = new WearHelper();
+            Wearable.MessageApi.addListener(googleApiClient, wearHelper);
+
+            locationHelper = new LocationHelper();
+            locationHelper.getLocationListeners().add(this);
 
             updateUser();
 
@@ -96,6 +105,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationHelper.startLocationUpdates(googleApiClient);
         }
+
     }
 
     @Override
@@ -107,6 +117,61 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.d(TAG, "Google API client connection failed");
+
+    }
+
+    /**
+     * sends a message to WearableListenerServices running on this device
+     */
+    public void sendMessageToLocalNode(final String path, final byte[] data) {
+        Log.v(TAG, "Sending message with path: " + path);
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    NodeApi.GetLocalNodeResult nodes = Wearable.NodeApi.getLocalNode(googleApiClient).await();
+                    Node node = nodes.getNode();
+
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            googleApiClient, node.getId(), path, data).await();
+
+                    if (result.getStatus().isSuccess()) {
+                        Log.v(TAG, "Message sent to " + node.getDisplayName());
+                    } else {
+                        Log.v(TAG, "Unable to send message to " + node.getDisplayName());
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * sends a message to WearableListenerServices running on connected devices
+     */
+    public void sendMessageToRemoteNodes(final String path, final byte[] data) {
+        Log.v(TAG, "Sending message with path: " + path);
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+                    for(Node node : nodes.getNodes()) {
+                        MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                                googleApiClient, node.getId(), path, data).await();
+                        if (result.getStatus().isSuccess()) {
+                            Log.v(TAG, "Message sent to " + node.getDisplayName());
+                        } else {
+                            Log.v(TAG, "Unable to send message to " + node.getDisplayName());
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     /**
