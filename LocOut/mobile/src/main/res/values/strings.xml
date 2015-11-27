@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">LocOut</string>
     <string name="action_settings">Settings</string>
+
+    <string name="unit_meters">meters</string>
+    <string name="unit_kilometer">kilometer</string>
+    <string name="unit_kilometers">kilometers</string>
+    <string name="unit_minute">minute</string>
+    <string name="unit_minutes">minutes</string>
+    <string name="unit_hour">hour</string>
+    <string name="unit_hours">hours</string>
+
+    <string name="distance_on_spot">You\'re here</string>
+    <string name="distance_super_close">Should be in sight</string>
+    <string name="distance_close">Just around the corner</string>
+    <string name="distance_from_place">[VALUE] from your place</string>
+    <string name="distance_beeline">[VALUE] beeline</string>
+
+    <string name="readable_trust_level">Trust level: [VALUE]%</string>
+
 </resources>

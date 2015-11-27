@@ -13,6 +13,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.wearable.Wearable;
+import com.locout.android.api.RequestCallback;
+import com.locout.android.api.RequestHelper;
 import com.locout.android.api.User;
 import com.locout.android.location.LocationHelper;
 import com.locout.android.location.LocationListener;
@@ -34,7 +36,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
         this.contextActivity = contextActivity;
 
         try	{
-            user = new User(1234l);
+            user = new User(1l);
             locationHelper = new LocationHelper();
             locationHelper.getLocationListeners().add(this);
 
@@ -45,6 +47,8 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
                     .addOnConnectionFailedListener(this)
                     .build();
 
+            updateUser();
+
             Log.d(TAG, "Initialization done");
             isInitialized = true;
         } catch (Exception ex) {
@@ -54,10 +58,36 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
         }
     }
 
+    public void updateUser() {
+        RequestHelper.getUserJson(RequestHelper.REQUEST_GET_USER, user.getId(), new RequestCallback() {
+
+            @Override
+            public void onRequestSuccess(int requestId, String response) {
+                switch (requestId) {
+                    case RequestHelper.REQUEST_GET_USER: {
+                        user.parseFromJson(response);
+                        user.updateTrustLevels(LocOut.this);
+                        ((MainActivity) contextActivity).updateDevices();
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onRequestFailed(int requestId, String response) {
+
+            }
+
+        });
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "Location updated: " + location.getLatitude() + "," + location.getLongitude());
-        // TODO: update user
+        user.setLatitude(location.getLatitude());
+        user.setLongitude(location.getLongitude());
+        user.updateTrustLevels(LocOut.this);
+        ((MainActivity) contextActivity).updateDevices();
     }
 
     @Override

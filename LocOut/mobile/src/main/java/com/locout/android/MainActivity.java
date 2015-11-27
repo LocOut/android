@@ -18,7 +18,6 @@ import android.widget.ListView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.locout.android.api.Device;
 import com.locout.android.ui.DeviceListAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,40 +65,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Device sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
-        sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
-        sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
-        sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
-        sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
-        sampleDevice = new Device(4567l);
-        sampleDevice.setName("Test device");
-        sampleDevice.setTrustLevel(0.5f);
-        app.getUser().getDevices().add(sampleDevice);
-
         deviceListAdapter = new DeviceListAdapter(this, R.id.deviceListView, app.getUser().getDevices());
-
         deviceListView = (ListView) findViewById(R.id.deviceListView);
         deviceListView.setAdapter(deviceListAdapter);
+    }
+
+    public void updateDevices() {
+        deviceListAdapter.setDevices(app.getUser().getDevices());
     }
 
     private void requestPermissions() {

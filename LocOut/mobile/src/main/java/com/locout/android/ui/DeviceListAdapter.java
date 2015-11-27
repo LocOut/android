@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.locout.android.R;
@@ -44,11 +45,24 @@ public class DeviceListAdapter extends ArrayAdapter<Device>{
             rowView.setTag(device.getId());
         }
 
-        // fill data
+        // update data
         ((TextView) rowView.findViewById(R.id.deviceName)).setText(device.getName());
-        ((TextView) rowView.findViewById(R.id.deviceTrustLevel)).setText(String.valueOf(device.getTrustLevelPercentage()));
+        ((TextView) rowView.findViewById(R.id.deviceTrustLevel)).setText(device.getReadableTrustLevel(context));
 
+        if (device.getTrustLevelPercentage() > Device.TRUST_LEVEL_MEDIUM) {
+            ((ImageView) rowView.findViewById(R.id.deviceIcon)).setImageResource(R.drawable.ic_lock_open_black_48dp);
+        } else {
+            ((ImageView) rowView.findViewById(R.id.deviceIcon)).setImageResource(R.drawable.ic_lock_outline_black_48dp);
+        }
 
         return rowView;
+    }
+
+    public ArrayList<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(ArrayList<Device> devices) {
+        this.devices = devices;
     }
 }
