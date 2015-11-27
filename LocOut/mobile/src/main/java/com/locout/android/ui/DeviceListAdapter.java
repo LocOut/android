@@ -49,7 +49,7 @@ public class DeviceListAdapter extends ArrayAdapter<Device>{
         ((TextView) rowView.findViewById(R.id.deviceName)).setText(device.getName());
         ((TextView) rowView.findViewById(R.id.deviceTrustLevel)).setText(device.getReadableTrustLevel(context));
 
-        if (device.getTrustLevelPercentage() > Device.TRUST_LEVEL_MEDIUM) {
+        if (device.getTrustLevel() > Device.TRUST_LEVEL_MEDIUM) {
             ((ImageView) rowView.findViewById(R.id.deviceIcon)).setImageResource(R.drawable.ic_lock_open_black_48dp);
         } else {
             ((ImageView) rowView.findViewById(R.id.deviceIcon)).setImageResource(R.drawable.ic_lock_outline_black_48dp);

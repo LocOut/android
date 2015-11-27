@@ -1,6 +1,7 @@
 package com.locout.android;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,16 +9,24 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.locout.android.api.RequestCallback;
+import com.locout.android.api.RequestHelper;
 import com.locout.android.ui.DeviceListAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -60,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                showAddDeviceDialog();
             }
         });
 
@@ -72,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateDevices() {
         deviceListAdapter.setDevices(app.getUser().getDevices());
+        deviceListAdapter.notifyDataSetChanged();
     }
 
     private void requestPermissions() {
@@ -132,22 +141,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         app.getGoogleApiClient().disconnect();
         super.onStop();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.locout.android/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.disconnect();
     }
 
     @Override
@@ -170,5 +163,64 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void showAddDeviceDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add a new device");
+        builder.setMessage("A new device will be created at your current location. Please specify a name:");
+
+        // Set up the input
+        LinearLayout linearLayout = new LinearLayout(this);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int horizontalMargin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics()));
+        int verticalMargin = Math.round(horizontalMargin / 2);
+        layoutParams.setMargins(horizontalMargin, verticalMargin, horizontalMargin, verticalMargin);
+
+        linearLayout.setLayoutParams(layoutParams);
+
+        final EditText input = new EditText(this);
+        input.setLayoutParams(layoutParams);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        linearLayout.addView(input);
+
+        builder.setView(linearLayout);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(final DialogInterface dialog, int which) {
+                String deviceName = input.getText().toString();
+
+                RequestHelper.addDevice(RequestHelper.REQUEST_ADD_DEVICE, app.getUser().getId(), deviceName,
+                        app.getUser().getLatitude(), app.getUser().getLongitude(), new RequestCallback() {
+
+                            @Override
+                            public void onRequestSuccess(int requestId, String response) {
+                                Snackbar snackbar = Snackbar.make(deviceListView, "Device added", Snackbar.LENGTH_LONG);
+                                snackbar.show();
+                                app.updateUser();
+                            }
+
+                            @Override
+                            public void onRequestFailed(int requestId, String response) {
+                                Snackbar snackbar = Snackbar.make(deviceListView, "Unable to create device", Snackbar.LENGTH_LONG);
+                                snackbar.show();
+                            }
+
+                        });
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 }

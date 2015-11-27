@@ -19,6 +19,7 @@ public class RequestHelper {
 
     public static final int REQUEST_GET_USER = 1;
     public static final int REQUEST_SET_TRUST_LEVEL = 2;
+    public static final int REQUEST_ADD_DEVICE = 3;
 
     public static String getRequest(String url) throws Exception {
         boolean success = false;
@@ -122,6 +123,29 @@ public class RequestHelper {
             public void run() {
                 try {
                     String url = EndpointHelper.ENDPOINT_SET_TRUST_LEVEL + deviceId + "?trustLevel=" + trustLevel;
+                    String response = getRequest(url);
+                    Log.d(TAG, "Request response: " + response);
+                    if (callback != null) {
+                        callback.onRequestSuccess(requestId, response);
+                    }
+                } catch (Exception ex) {
+                    Log.w(TAG, "Request failed: " + ex.getMessage());
+                    if (callback != null) {
+                        callback.onRequestFailed(requestId, ex.getMessage());
+                    }
+                }
+            }
+        };
+        new Thread(runnable).start();
+    }
+
+    public static void addDevice(final int requestId, final long userId, final String name, final double latitude, final double longitude, final RequestCallback callback) {
+        Log.d(TAG, "Adding new device");
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String url = EndpointHelper.ENDPOINT_ADD_DEVICE + userId + "?lat=" + latitude + "&long=" + longitude + "&name=" + name;
                     String response = getRequest(url);
                     Log.d(TAG, "Request response: " + response);
                     if (callback != null) {

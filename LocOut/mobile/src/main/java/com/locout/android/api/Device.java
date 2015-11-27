@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class Device {
 
-    private static final int MINIMUM_UPLOAD_INTERVAL = 5000;
+    private static final int MINIMUM_UPLOAD_INTERVAL = 10000;
 
     private static final float TRUST_DISTANCE_WEIGHT = 0.8f;
     private static final float TRUST_WEAR_WEIGHT = 0.1f;
@@ -70,8 +70,10 @@ public class Device {
     }
 
     public void uploadTrustLevel() {
-        if ((new Date()).getTime() > lastTrustLevelUpload + MINIMUM_UPLOAD_INTERVAL) {
+        long now = (new Date()).getTime();
+        if (now > lastTrustLevelUpload + MINIMUM_UPLOAD_INTERVAL) {
             RequestHelper.setTrustLevel(RequestHelper.REQUEST_SET_TRUST_LEVEL, id, trustLevel, null);
+            lastTrustLevelUpload = now;
         }
     }
 

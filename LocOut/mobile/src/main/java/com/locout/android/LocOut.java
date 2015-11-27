@@ -94,18 +94,14 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Google API client connected");
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            if (!locationHelper.isUpdatingLocation()) {
-                locationHelper.startLocationUpdates(googleApiClient);
-            }
+            locationHelper.startLocationUpdates(googleApiClient);
         }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "Google API client connection suspended");
-        if (locationHelper.isUpdatingLocation()) {
-            locationHelper.stopLocationUpdates(googleApiClient);
-        }
+        locationHelper.stopLocationUpdates(googleApiClient);
     }
 
     @Override
