@@ -48,7 +48,7 @@ public class Device {
         //Log.d(LocOut.TAG, "Distance: " + distance);
 
         newTrustLevel = TRUST_DISTANCE_WEIGHT * calculateDistanceTrustLevel(distance);
-        newTrustLevel += TRUST_WEAR_WEIGHT * calculateWearTrustLevel();
+        newTrustLevel += TRUST_WEAR_WEIGHT * calculateWearTrustLevel(app);
 
         trustLevel = Math.max(0, Math.min(1, newTrustLevel));
         //Log.d(LocOut.TAG, "Trust level: " + trustLevel);
@@ -64,9 +64,8 @@ public class Device {
         }
     }
 
-    private float calculateWearTrustLevel() {
-        //return (float) Math.random();
-        return 0;
+    private float calculateWearTrustLevel(LocOut app) {
+        return app.getWearHelper().getTrustLevel();
     }
 
     public void uploadTrustLevel() {

@@ -3,8 +3,10 @@ package com.locout.android;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -13,6 +15,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +28,7 @@ import android.widget.ListView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.locout.android.api.Device;
 import com.locout.android.api.RequestCallback;
 import com.locout.android.api.RequestHelper;
 import com.locout.android.ui.DeviceListAdapter;
@@ -193,18 +197,41 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(final DialogInterface dialog, int which) {
                 String deviceName = input.getText().toString();
 
-                RequestHelper.addDevice(RequestHelper.REQUEST_ADD_DEVICE, app.getUser().getId(), deviceName,
-                        app.getUser().getLatitude(), app.getUser().getLongitude(), new RequestCallback() {
+                final Device newDevice = new Device(0);
+                newDevice.setName(deviceName);
+                newDevice.setTrustLevel(1f);
+                newDevice.setLatitude(app.getUser().getLatitude());
+                newDevice.setLongitude(app.getUser().getLongitude());
+
+
+                RequestHelper.addDevice(RequestHelper.REQUEST_ADD_DEVICE, app.getUser().getId(), newDevice, new RequestCallback() {
 
                             @Override
                             public void onRequestSuccess(int requestId, String response) {
-                                Snackbar snackbar = Snackbar.make(deviceListView, "Device added", Snackbar.LENGTH_LONG);
-                                snackbar.show();
-                                app.updateUser();
+                                Handler mainHandler = new Handler(MainActivity.this.getMainLooper());
+
+                                Runnable uiRunnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Snackbar snackbar = Snackbar.make(deviceListView, "Device added", Snackbar.LENGTH_LONG);
+                                        snackbar.show();
+                                        app.getUser().getDevices().add(newDevice);
+
+                                        Location currentLocation = new Location("");
+                                        currentLocation.setLatitude(app.getUser().getLatitude());
+                                        currentLocation.setLongitude(app.getUser().getLongitude());
+
+                                        //app.onLocationChanged(currentLocation);
+                                        app.updateUser();
+                                    }
+                                };
+
+                                mainHandler.post(uiRunnable);
                             }
 
                             @Override
                             public void onRequestFailed(int requestId, String response) {
+                                Log.e(LocOut.TAG, "Unable to create device: " + response);
                                 Snackbar snackbar = Snackbar.make(deviceListView, "Unable to create device", Snackbar.LENGTH_LONG);
                                 snackbar.show();
                             }

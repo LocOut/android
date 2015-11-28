@@ -50,7 +50,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
                     .addOnConnectionFailedListener(this)
                     .build();
 
-            wearHelper = new WearHelper();
+            wearHelper = new WearHelper(this);
             Wearable.MessageApi.addListener(googleApiClient, wearHelper);
 
             locationHelper = new LocationHelper();
@@ -92,7 +92,6 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, "Location updated: " + location.getLatitude() + "," + location.getLongitude());
         user.setLatitude(location.getLatitude());
         user.setLongitude(location.getLongitude());
         user.updateTrustLevels(LocOut.this);
@@ -102,6 +101,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Google API client connected");
+        wearHelper.startUpdating();
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationHelper.startLocationUpdates(googleApiClient);
         }
@@ -111,6 +111,7 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "Google API client connection suspended");
+        wearHelper.stopUpdating();
         locationHelper.stopLocationUpdates(googleApiClient);
     }
 
@@ -207,5 +208,13 @@ public class LocOut extends Application implements GoogleApiClient.ConnectionCal
 
     public void setLocationHelper(LocationHelper locationHelper) {
         this.locationHelper = locationHelper;
+    }
+
+    public WearHelper getWearHelper() {
+        return wearHelper;
+    }
+
+    public void setWearHelper(WearHelper wearHelper) {
+        this.wearHelper = wearHelper;
     }
 }

@@ -1,5 +1,6 @@
 package com.locout.android;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,6 +13,7 @@ public class TrustLevelHelper implements SensorEventListener {
 
     public static final String TAG = TrustLevelHelper.class.getSimpleName();
 
+    private Context context;
     private SensorManager hardwareSensorManager;
 
     private float trustLevel;
@@ -19,8 +21,11 @@ public class TrustLevelHelper implements SensorEventListener {
     private ArrayList<Integer> sensorTypes;
     private ArrayList<TrustLevelChangedListener> trustLevelChangedListeners;
 
-    public TrustLevelHelper() {
+    public TrustLevelHelper(Context context) {
+        this.context = context;
+
         trustLevelChangedListeners = new ArrayList<>();
+        hardwareSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
         sensorTypes = new ArrayList<>();
         sensorTypes.add(Sensor.TYPE_SIGNIFICANT_MOTION);

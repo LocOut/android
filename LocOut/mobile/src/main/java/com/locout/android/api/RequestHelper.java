@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
 public class RequestHelper {
@@ -101,7 +102,7 @@ public class RequestHelper {
                 try {
                     String url = EndpointHelper.ENDPOINT_GET_USER + userId;
                     String response = getRequest(url);
-                    Log.d(TAG, "Request response: " + response);
+                    //Log.d(TAG, "Request response: " + response);
                     if (callback != null) {
                         callback.onRequestSuccess(requestId, response);
                     }
@@ -124,7 +125,7 @@ public class RequestHelper {
                 try {
                     String url = EndpointHelper.ENDPOINT_SET_TRUST_LEVEL + deviceId + "?trustLevel=" + trustLevel;
                     String response = getRequest(url);
-                    Log.d(TAG, "Request response: " + response);
+                    //Log.d(TAG, "Request response: " + response);
                     if (callback != null) {
                         callback.onRequestSuccess(requestId, response);
                     }
@@ -139,20 +140,22 @@ public class RequestHelper {
         new Thread(runnable).start();
     }
 
-    public static void addDevice(final int requestId, final long userId, final String name, final double latitude, final double longitude, final RequestCallback callback) {
+    public static void addDevice(final int requestId, final long userId, final Device device, final RequestCallback callback) {
         Log.d(TAG, "Adding new device");
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                String url = "";
                 try {
-                    String url = EndpointHelper.ENDPOINT_ADD_DEVICE + userId + "?lat=" + latitude + "&long=" + longitude + "&name=" + name;
+                    url = EndpointHelper.ENDPOINT_ADD_DEVICE + userId + "?lat=" + device.getLatitude() + "&long=" + device.getLongitude() + "&name=" + URLEncoder.encode(device.getName(), "utf-8");
                     String response = getRequest(url);
-                    Log.d(TAG, "Request response: " + response);
+                    //Log.d(TAG, "Request response: " + response);
                     if (callback != null) {
                         callback.onRequestSuccess(requestId, response);
                     }
                 } catch (Exception ex) {
-                    Log.w(TAG, "Request failed: " + ex.getMessage());
+                    Log.e(TAG, "Request failed: " + url);
+                    ex.printStackTrace();
                     if (callback != null) {
                         callback.onRequestFailed(requestId, ex.getMessage());
                     }

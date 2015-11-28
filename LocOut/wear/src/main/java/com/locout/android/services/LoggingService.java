@@ -39,7 +39,7 @@ public class LoggingService extends WearableListenerService implements TrustLeve
         long token = Binder.clearCallingIdentity();
         try {
             if (trustLevelHelper == null) {
-                trustLevelHelper = new TrustLevelHelper();
+                trustLevelHelper = new TrustLevelHelper(getApplicationContext());
                 trustLevelHelper.getTrustLevelChangedListeners().add(this);
             }
         } finally {
@@ -93,8 +93,9 @@ public class LoggingService extends WearableListenerService implements TrustLeve
             startLogging();
         } else if (messageEvent.getPath().equalsIgnoreCase("stop_logging") ) {
             stopLogging();
+        } else if (messageEvent.getPath().equalsIgnoreCase("get_trust_level") ) {
+            sendTrustLevel(trustLevelHelper.getTrustLevel());
         }
-
     }
 
     /**
